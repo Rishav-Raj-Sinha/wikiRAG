@@ -26,7 +26,6 @@ def get_wikipedia_link(search_term):
     except Exception as e:
         return f"Error: {e}"
 
-# Example Usage
 search_query = st.text_input("enter search terms")
 if search_query and search_query != st.session_state.current_search_query:
 
