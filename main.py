@@ -17,6 +17,12 @@ if 'current_search_query' not in st.session_state:
     st.session_state.current_search_query = None
 if 'qa_chain' not in st.session_state:
     st.session_state.qa_chain = None
+if 'processing_complete' not in st.session_state:
+    st.session_state.processing_complete = False
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
 
 def get_wikipedia_link(search_term):
     try:
@@ -61,9 +67,19 @@ if search_query and search_query != st.session_state.current_search_query:
     st.session_state.vector_store = vector_store
     st.session_state.qa_chain = qa_chain
     st.session_state.current_search_query = search_query
+    st.session_state.processing_complete = True  # Set flag to True when processing is complete
+    st.success('Ready for questions!')
 
-question = st.text_input("enter your query")
-if question and st.session_state.qa_chain is not None:
-
-        result = st.session_state.qa_chain({"query":question})
-        st.write(result["result"])
+if st.session_state.processing_complete:
+    question = st.chat_input("enter your query")
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+    if question and st.session_state.qa_chain is not None:
+        with st.chat_message("user"):
+            st.markdown(question)
+        st.session_state.messages.append({"role": "user", "content": question})
+        with st.chat_message("assistant"):
+            result = st.session_state.qa_chain({"query":question})
+            st.markdown(result["result"])
+        st.session_state.messages.append({"role": "assistant", "content": result["result"]})
